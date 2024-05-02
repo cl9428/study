@@ -36,7 +36,6 @@ public class getDfsDp {
     }
 
     private static int collectCandies(int[][] matrix) {
-
         if (matrix == null || matrix.length == 0 || matrix[0].length == 0) {
             System.out.println("妈妈无法到达宝宝位置");
             return -1;
@@ -67,7 +66,9 @@ public class getDfsDp {
         }
 
         boolean[][] visited = new boolean[N][N];
-        Queue<int[]> queue = new LinkedList<>();
+        Queue<int[]> queue = new PriorityQueue<>((a, b) -> a[2] != b[2] ? a[2] - b[2] : b[3] - a[3]); // 按照步数和糖果数量排序
+        Map<String, Integer> maxCandiesMap = new HashMap<>(); // 记录每个位置的最多糖果数量
+
         queue.offer(new int[]{startX, startY, 0, 0}); // x, y, 步数, 当前糖果数
         visited[startX][startY] = true;
 
@@ -85,7 +86,6 @@ public class getDfsDp {
             // 到达宝宝位置，更新最大糖果数
             if (x == endX && y == endY) {
                 maxCandies = Math.max(maxCandies, candies);
-                continue;
             }
 
             // 遍历四个方向
@@ -96,14 +96,16 @@ public class getDfsDp {
                 // 检查新位置是否合法且未访问过
                 if (newX >= 0 && newX < N && newY >= 0 && newY < N && !visited[newX][newY] && matrix[newX][newY] != -1) {
                     visited[newX][newY] = true;
-                    // 如果新位置有糖果，则累加糖果数
-                    int newCandies = candies + (matrix[newX][newY] > 0 ? matrix[newX][newY] : 0);
+                    int newCandies = candies + (matrix[newX][newY] > 0 ? matrix[newX][newY] : 0); // 累加糖果数
                     queue.offer(new int[]{newX, newY, steps + 1, newCandies});
+
+                    // 更新最多糖果数量
+                    String key = newX + "," + newY;
+                    if (!maxCandiesMap.containsKey(key) || newCandies > maxCandiesMap.get(key)) {
+                        maxCandiesMap.put(key, newCandies);
+                    }
                 }
-
             }
-
-
         }
         Arrays.stream(visited)
                 .map(Arrays::toString)
@@ -112,8 +114,7 @@ public class getDfsDp {
             System.out.println("无法到达宝宝位置");
             return -1;
         }
-        System.out.println("最短路径下 最多糖果 maxCandies = " + maxCandies);
+        System.out.println("最短时间下最多糖果 maxCandies = " + maxCandies);
         return maxCandies;
-
     }
 }
